@@ -279,14 +279,8 @@ func (u URN) Validate() error {
 			return fmt.Errorf("invalid facebook id: %s", path)
 		}
 	case InstagramScheme:
-		// we don't validate Instagram refs since they come from the outside
-		if u.IsInstagramRef() {
-			return nil
-		}
-
-		// otherwise, this should be an int
 		if !allDigitsRegex.MatchString(path) {
-			return fmt.Errorf("invalid Instagram id: %s", path)
+			return fmt.Errorf("invalid instagram id: %s", path)
 		}
 	case JiochatScheme:
 		if !allDigitsRegex.MatchString(path) {
@@ -391,19 +385,6 @@ func (u URN) IsFacebookRef() bool {
 func (u URN) FacebookRef() string {
 	if u.IsFacebookRef() {
 		return strings.TrimPrefix(u.Path(), FacebookRefPrefix)
-	}
-	return ""
-}
-
-// IsInstagramRef returns whether this URN is a instagram referral
-func (u URN) IsInstagramRef() bool {
-	return u.Scheme() == InstagramScheme && strings.HasPrefix(u.Path(), InstagramRefPrefix)
-}
-
-// InstagramRef returns the instagram referral portion of our path, this return empty string in the case where we aren't a Instagram scheme
-func (u URN) InstagramRef() string {
-	if u.IsInstagramRef() {
-		return strings.TrimPrefix(u.Path(), InstagramRefPrefix)
 	}
 	return ""
 }
