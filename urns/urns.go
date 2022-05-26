@@ -35,6 +35,9 @@ const (
 	// RocketChatScheme is the scheme used for RocketChat identifiers
 	RocketChatScheme string = "rocketchat"
 
+	// SlachScheme is the scheme used for Slack identifiers
+	SlackScheme string = "slack"
+
 	// TelegramScheme is the scheme used for Telegram identifiers
 	TelegramScheme string = "telegram"
 
@@ -82,6 +85,7 @@ var ValidSchemes = map[string]bool{
 	JiochatScheme:    true,
 	LineScheme:       true,
 	RocketChatScheme: true,
+	SlackScheme:      true,
 	TelegramScheme:   true,
 	TelScheme:        true,
 	TwitterIDScheme:  true,
