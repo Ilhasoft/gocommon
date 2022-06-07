@@ -1,3 +1,25 @@
+v1.19.1
+----------
+ * Update to latest phonenumbers
+
+v1.19.0
+----------
+ * Update to go 1.18 and make dbutil.Bulk functions generic
+ * Tidy up scheme list to make it easier to see what is there
+
+v1.18.0
+----------
+ * CI with go 1.17 and 1.18
+ * Add httpx.DetectContentType which wraps functionality from github.com/gabriel-vasile/mimetype
+
+v1.17.1
+----------
+ * Fix race condition in S3Storage.BatchPut
+
+v1.17.0
+----------
+ * Remove rcache module (replace with redisx.IntervalHash) and thus broken redigo dependency
+
 v1.16.2
 ----------
  * Return QueryError if error during row iteration
