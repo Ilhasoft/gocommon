@@ -75,7 +75,7 @@ const (
 	TeamsScheme string = "teams"
 
 	// TeamsServiceURLPrefix is the path prefix used for serviceURL in Teams URN
-	TeamsServiceURLPrefix string = "serviceURL:"
+	TeamsServiceURLPrefix string = ":serviceURL:"
 )
 
 // ValidSchemes is the set of URN schemes understood by this library
@@ -405,7 +405,8 @@ func (u URN) FacebookRef() string {
 
 // TeamsServiceURL returns the teams serviceURL part of our path, this empty return string in case we are not a teams schema
 func (u URN) TeamsServiceURL() string {
-	return strings.TrimPrefix(u.Path(), TeamsServiceURLPrefix)
+	_, serviceUrl, _ := strings.Cut(u.Path(), TeamsServiceURLPrefix)
+	return serviceUrl
 }
 
 // String returns the string representation of this URN
