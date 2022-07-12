@@ -20,10 +20,13 @@ func TestURNProperties(t *testing.T) {
 		{"twitter:85114#billy_bob", "billy_bob", "billy_bob", "", map[string][]string{}},
 		{"twitter:billy_bob", "billy_bob", "", "", map[string][]string{}},
 		{"tel:not-a-number", "not-a-number", "", "", map[string][]string{}},
+		{"instagram:billy_bob", "billy_bob", "", "", map[string][]string{}},
+		{"instagram:22114?foo=bar#foobar", "foobar", "foobar", "foo=bar", map[string][]string{"foo": {"bar"}}},
 		{"facebook:ref:12345?foo=bar&foo=zap", "ref:12345", "", "foo=bar&foo=zap", map[string][]string{"foo": {"bar", "zap"}}},
 		{"tel:+250788383383", "0788 383 383", "", "", map[string][]string{}},
 		{"twitter:85114?foo=bar#foobar", "foobar", "foobar", "foo=bar", map[string][]string{"foo": {"bar"}}},
 		{"discord:732326982863421591", "732326982863421591", "", "", map[string][]string{}},
+		{"webchat:123456@foo", "123456@foo", "", "", map[string][]string{}},
 	}
 	for _, tc := range testCases {
 		assert.Equal(t, string(tc.urn), tc.urn.String())
@@ -44,8 +47,10 @@ func TestIsFacebookRef(t *testing.T) {
 	}{
 		{"facebook:ref:12345", true, "12345"},
 		{"facebook:12345", false, ""},
+
 		{"tel:25078838383", false, ""},
 		{"discord:732326982863421591", false, ""},
+		{"discord:foo", false, ""},
 	}
 	for _, tc := range testCases {
 		assert.Equal(t, tc.isFacebookRef, tc.urn.IsFacebookRef(), "is facebook ref mismatch for %s", tc.urn)
@@ -65,10 +70,12 @@ func TestFromParts(t *testing.T) {
 		{"tel", "+250788383383", "", URN("tel:+250788383383"), URN("tel:+250788383383"), false},
 		{"twitter", "hello", "", URN("twitter:hello"), URN("twitter:hello"), false},
 		{"facebook", "12345", "", URN("facebook:12345"), URN("facebook:12345"), false},
+		{"instagram", "12345", "", URN("instagram:12345"), URN("instagram:12345"), false},
 		{"telegram", "12345", "Jane", URN("telegram:12345#Jane"), URN("telegram:12345"), false},
 		{"whatsapp", "12345", "", URN("whatsapp:12345"), URN("whatsapp:12345"), false},
 		{"viber", "", "", NilURN, ":", true},
 		{"discord", "732326982863421591", "", URN("discord:732326982863421591"), URN("discord:732326982863421591"), false},
+		{"webchat", "12345@foo", "", URN("webchat:12345@foo"), URN("webchat:12345@foo"), false},
 	}
 
 	for _, tc := range testCases {
@@ -234,6 +241,8 @@ func TestValidate(t *testing.T) {
 		{"telegram:abcdef", "invalid telegram id"},
 		{"facebook:12345678901234567", ""},
 		{"facebook:abcdef", "invalid facebook id"},
+		{"instagram:12345678901234567", ""},
+		{"instagram:abcdef", "invalid instagram id"},
 
 		// facebook refs can be anything
 		{"facebook:ref:facebookRef", ""},
@@ -385,6 +394,28 @@ func TestFacebookURNs(t *testing.T) {
 	}
 }
 
+func TestInstagramURNs(t *testing.T) {
+	testCases := []struct {
+		identifier string
+		expected   URN
+		hasError   bool
+	}{
+		{"12345", URN("instagram:12345"), false},
+		{"invalid", NilURN, true},
+	}
+
+	for _, tc := range testCases {
+		urn, err := NewInstagramURN(tc.identifier)
+
+		if tc.hasError {
+			assert.Error(t, err, "expected error for %s", tc.identifier)
+		} else {
+			assert.NoError(t, err, "unexpected error for %s", tc.identifier)
+			assert.Equal(t, tc.expected, urn, "created URN mismatch for %s", tc.identifier)
+		}
+	}
+}
+
 func TestFirebaseURNs(t *testing.T) {
 	testCases := []struct {
 		identifier string
@@ -420,6 +451,28 @@ func TestDiscordURNs(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		urn, err := NewDiscordURN(tc.identifier)
+		if tc.hasError {
+			assert.Error(t, err, "expected error for %s", tc.identifier)
+		} else {
+			assert.NoError(t, err, "expected error for %s", tc.identifier)
+			assert.Equal(t, tc.expected, urn, "created URN mismatch for %s", tc.identifier)
+		}
+	}
+}
+
+func TestWebChatURNs(t *testing.T) {
+	testCases := []struct {
+		identifier string
+		expected   URN
+		hasError   bool
+	}{
+		{"123456@foo", URN("webchat:123456@foo"), false},
+		{"matricula:123456@foo", URN("webchat:matricula:123456@foo"), false},
+		{"123456", URN("webchat:123456@foo"), true},
+	}
+
+	for _, tc := range testCases {
+		urn, err := NewWebChatURN(tc.identifier)
 		if tc.hasError {
 			assert.Error(t, err, "expected error for %s", tc.identifier)
 		} else {

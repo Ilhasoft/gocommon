@@ -32,6 +32,12 @@ const (
 	// LineScheme is the scheme used for LINE identifiers
 	LineScheme string = "line"
 
+	// RocketChatScheme is the scheme used for RocketChat identifiers
+	RocketChatScheme string = "rocketchat"
+
+	// SlachScheme is the scheme used for Slack identifiers
+	SlackScheme string = "slack"
+
 	// TelegramScheme is the scheme used for Telegram identifiers
 	TelegramScheme string = "telegram"
 
@@ -61,26 +67,36 @@ const (
 
 	// DiscordScheme is the scheme used for Discord identifiers (user IDs not usernames)
 	DiscordScheme string = "discord"
+
+	// WebChatScheme is the scheme used for any Web Chat identifiers
+	WebChatScheme string = "webchat"
+
+	// InstagramScheme is the scheme used for any Web Chat identifiers
+	InstagramScheme string = "instagram"
 )
 
 // ValidSchemes is the set of URN schemes understood by this library
 var ValidSchemes = map[string]bool{
-	EmailScheme:     true,
-	ExternalScheme:  true,
-	FacebookScheme:  true,
-	FCMScheme:       true,
-	FreshChatScheme: true,
-	JiochatScheme:   true,
-	LineScheme:      true,
-	TelegramScheme:  true,
-	TelScheme:       true,
-	TwitterIDScheme: true,
-	TwitterScheme:   true,
-	ViberScheme:     true,
-	VKScheme:        true,
-	WhatsAppScheme:  true,
-	WeChatScheme:    true,
-	DiscordScheme:   true,
+	EmailScheme:      true,
+	ExternalScheme:   true,
+	FacebookScheme:   true,
+	FCMScheme:        true,
+	FreshChatScheme:  true,
+	JiochatScheme:    true,
+	LineScheme:       true,
+	RocketChatScheme: true,
+	SlackScheme:      true,
+	TelegramScheme:   true,
+	TelScheme:        true,
+	TwitterIDScheme:  true,
+	TwitterScheme:    true,
+	ViberScheme:      true,
+	VKScheme:         true,
+	WhatsAppScheme:   true,
+	WeChatScheme:     true,
+	DiscordScheme:    true,
+	WebChatScheme:    true,
+	InstagramScheme:  true,
 }
 
 // IsValidScheme checks whether the provided scheme is valid
@@ -97,6 +113,7 @@ var viberRegex = regexp.MustCompile(`^[a-zA-Z0-9_=/+]{1,24}$`)
 var lineRegex = regexp.MustCompile(`^[a-zA-Z0-9_]{1,36}$`)
 var allDigitsRegex = regexp.MustCompile(`^[0-9]+$`)
 var freshchatRegex = regexp.MustCompile(`^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$`)
+var webchatRegex = regexp.MustCompile(`^[^\s@]+@[^\s@]+$`)
 
 // URN represents a Universal Resource Name, we use this for contact identifiers like phone numbers etc..
 type URN string
@@ -129,6 +146,15 @@ func NewFacebookURN(identifier string) (URN, error) {
 // NewDiscordURN returns a URN for the passed in Discord identifier
 func NewDiscordURN(identifier string) (URN, error) {
 	return NewURNFromParts(DiscordScheme, identifier, "", "")
+}
+
+func NewWebChatURN(identifier string) (URN, error) {
+	return NewURNFromParts(WebChatScheme, identifier, "", "")
+}
+
+// NewInstagramURN returns a URN for the passed in instagram identifier
+func NewInstagramURN(identifier string) (URN, error) {
+	return NewURNFromParts(InstagramScheme, identifier, "", "")
 }
 
 // returns a new URN for the given scheme, path, query and display
@@ -253,6 +279,10 @@ func (u URN) Validate() error {
 		if !allDigitsRegex.MatchString(path) {
 			return fmt.Errorf("invalid facebook id: %s", path)
 		}
+	case InstagramScheme:
+		if !allDigitsRegex.MatchString(path) {
+			return fmt.Errorf("invalid instagram id: %s", path)
+		}
 	case JiochatScheme:
 		if !allDigitsRegex.MatchString(path) {
 			return fmt.Errorf("invalid jiochat id: %s", path)
@@ -283,9 +313,15 @@ func (u URN) Validate() error {
 		if !freshchatRegex.MatchString(path) {
 			return fmt.Errorf("invalid freshchat id: %s", path)
 		}
+
 	case DiscordScheme:
 		if !allDigitsRegex.MatchString(path) {
 			return fmt.Errorf("invalid discord id: %s", path)
+		}
+
+	case WebChatScheme:
+		if !webchatRegex.MatchString(path) {
+			return fmt.Errorf("invalid webchat id: %s", path)
 		}
 	}
 	return nil // anything goes for external schemes
