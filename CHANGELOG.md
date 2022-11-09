@@ -1,3 +1,11 @@
+v1.17.1
+----------
+ * Fix race condition in S3Storage.BatchPut
+
+v1.17.0
+----------
+ * Remove rcache module (replace with redisx.IntervalHash) and thus broken redigo dependency
+
 v1.16.2
 ----------
  * Return QueryError if error during row iteration
