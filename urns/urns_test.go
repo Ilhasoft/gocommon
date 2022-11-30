@@ -292,6 +292,9 @@ func TestValidate(t *testing.T) {
 		{"teams:a1b2n4:serviceURL:https://test.example", "invalid teams id"},
 		{"teams:a:a1b2n4:serviceURL:htt://test.example", "invalid teams id"},
 		{"teams:a:a1b2n4:https://test.example", "invalid teams id"},
+
+		// slack IDs
+		{"slack:U0123ABCDEF", ""},
 	}
 
 	for _, tc := range testCases {
