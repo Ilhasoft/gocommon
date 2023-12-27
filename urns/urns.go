@@ -80,7 +80,7 @@ var lineRegex = regexp.MustCompile(`^[a-zA-Z0-9_]{1,36}$`)
 var allDigitsRegex = regexp.MustCompile(`^[0-9]+$`)
 var freshchatRegex = regexp.MustCompile(`^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$`)
 var webchatRegex = regexp.MustCompile(`^[^\s@]+@[^\s@]+$`)
-var teamsRegex = regexp.MustCompile(`^a:\w[a-zA-Z0-9\w-]+:(serviceURL):(http[s]?:\/\/(www\.)?(.*)?\/?(.)*(/[a-zA-Z]+)?)`)
+var teamsRegex = regexp.MustCompile(`^\w[a-zA-Z0-9\w-]+:((www\.)?(.*)?\/?(.)*(/[a-zA-Z]+)?)`)
 
 // URN represents a Universal Resource Name, we use this for contact identifiers like phone numbers etc..
 type URN string
@@ -184,9 +184,7 @@ func (u URN) Normalize(country string) URN {
 		normPath = strings.ToLower(normPath)
 
 		// strip @ prefix if provided
-		if strings.HasPrefix(normPath, "@") {
-			normPath = normPath[1:]
-		}
+		normPath = strings.TrimPrefix(normPath, "@")
 
 	case TwitterIDScheme:
 		if display != "" {
@@ -368,7 +366,7 @@ func (u URN) FacebookRef() string {
 
 // TeamsServiceURL returns the teams serviceURL part of our path, this empty return string in case we are not a teams schema
 func (u URN) TeamsServiceURL() string {
-	serviceUrl := strings.Split(u.Path(), TeamsServiceURLPrefix)
+	serviceUrl := strings.Split(u.Path(), ":")
 	return serviceUrl[1]
 }
 

@@ -25,12 +25,12 @@ func TestAccessConfig(t *testing.T) {
 		},
 	)
 
-	httpx.SetRequestor(httpx.NewMockRequestor(map[string][]httpx.MockResponse{
+	httpx.SetRequestor(httpx.NewMockRequestor(map[string][]*httpx.MockResponse{
 		"https://nyaruka.com": {
-			httpx.NewMockResponse(200, nil, ``),
+			httpx.NewMockResponse(200, nil, nil),
 		},
 		"https://11.0.0.0": {
-			httpx.NewMockResponse(200, nil, ``),
+			httpx.NewMockResponse(200, nil, nil),
 		},
 	}))
 
