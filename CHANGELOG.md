@@ -1,3 +1,26 @@
+v1.37.0 (2023-07-20)
+-------------------------
+ * Storage paths shouldn't need to start with slash
+
+v1.36.0 (2023-06-30)
+-------------------------
+ * Add syncx.Batcher
+ * Use services for github CI
+
+v1.35.0 (2023-02-18)
+-------------------------
+ * bump golang.org/x/net from 0.5.0 to 0.7.0
+ * Update to latest phonenumbers
+ * Remove null value support functions now that nyaruka/null has been updated
+
+v1.34.1 (2023-01-31)
+-------------------------
+ * Update dependencies including phonenumbers
+
+v1.34.0 (2023-01-26)
+-------------------------
+ * Add util functions for working with nullable string types
+
 v1.33.1 (2022-11-28)
 -------------------------
  * Update deps
