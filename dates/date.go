@@ -1,6 +1,7 @@
 package dates
 
 import (
+	"database/sql/driver"
 	"time"
 )
 
@@ -42,8 +43,8 @@ func (d Date) Compare(other Date) int {
 }
 
 // Combine combines this date and a time to make a datetime
-func (d Date) Combine(timeOfDay TimeOfDay, tz *time.Location) time.Time {
-	return time.Date(d.Year, d.Month, d.Day, 0, 0, 0, 0, tz)
+func (d Date) Combine(tod TimeOfDay, tz *time.Location) time.Time {
+	return time.Date(d.Year, d.Month, d.Day, tod.Hour, tod.Minute, tod.Second, tod.Nanos, tz)
 }
 
 // Format formats this date as a string using the given layout
@@ -76,6 +77,17 @@ func (d Date) WeekNum() int {
 func (d Date) String() string {
 	s, _ := d.Format(ISO8601Date, "")
 	return s
+}
+
+// Value returns the value used in db writes
+func (d Date) Value() (driver.Value, error) {
+	return d.String(), nil
+}
+
+// Scan scans from the db value
+func (d *Date) Scan(value interface{}) error {
+	*d = ExtractDate(value.(time.Time))
+	return nil
 }
 
 // ZeroDate is our uninitialized date value

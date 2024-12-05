@@ -2,21 +2,19 @@ package httpx
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 	"time"
 	"unicode/utf8"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/nyaruka/gocommon/dates"
-
 	"github.com/pkg/errors"
 )
-
-var debug = false
 
 // Do makes the given HTTP request using the current requestor and retry config
 func Do(client *http.Client, request *http.Request, retries *RetryConfig, access *AccessConfig) (*http.Response, error) {
@@ -80,29 +78,54 @@ func (t *Trace) String() string {
 	return b.String()
 }
 
-// SanitizedResponse returns a valid UTF-8 string version of trace, substituting the body with a placeholder
+// SanitizedRequest returns a valid UTF-8 string version of the request, substituting the body with a placeholder
 // if it isn't valid UTF-8. It also strips any NULL characters as not all external dependencies can handle those.
-func (t *Trace) SanitizedResponse(placeholder string) []byte {
+func (t *Trace) SanitizedRequest(placeholder string) string {
+	// split request trace into headers and body
+	var headers, body []byte
+	parts := bytes.SplitN(t.RequestTrace, []byte("\r\n\r\n"), 2)
+	headers = append(parts[0], []byte("\r\n\r\n")...)
+
+	if len(parts) > 1 {
+		body = parts[1]
+	} else {
+		body = nil
+	}
+
+	return santizedTrace(headers, body, placeholder)
+}
+
+// SanitizedResponse returns a valid UTF-8 string version of the response, substituting the body with a placeholder
+// if it isn't valid UTF-8. It also strips any NULL characters as not all external dependencies can handle those.
+func (t *Trace) SanitizedResponse(placeholder string) string {
+	return santizedTrace(t.ResponseTrace, t.ResponseBody, placeholder)
+}
+
+func santizedTrace(header []byte, body []byte, bodyPlaceHolder string) string {
 	b := &bytes.Buffer{}
 
 	// ensure headers section is valid
-	b.Write(replaceNullChars(bytes.ToValidUTF8(t.ResponseTrace, []byte(`�`))))
+	b.Write(replaceNullChars(bytes.ToValidUTF8(header, []byte(`�`))))
 
 	// only include body if it's valid UTF-8 as it could be a binary file or anything
-	if utf8.Valid(t.ResponseBody) {
-		b.Write(replaceNullChars(t.ResponseBody))
+	if utf8.Valid(body) {
+		b.Write(replaceNullChars(body))
 	} else {
-		b.Write([]byte(placeholder))
+		b.Write([]byte(bodyPlaceHolder))
 	}
 
-	return b.Bytes()
+	return b.String()
 }
 
 func replaceNullChars(b []byte) []byte {
 	return bytes.ReplaceAll(b, []byte{0}, []byte(`�`))
 }
 
-// DoTrace makes the given request saving traces of the complete request and response
+// DoTrace makes the given request saving traces of the complete request and response.
+//
+//   - If the request is successful, the trace will have a response and response body
+//   - If reading the body errors, the trace will have a response but no response body
+//   - If connection fails, the trace will have a request but no response or response body
 func DoTrace(client *http.Client, request *http.Request, retries *RetryConfig, access *AccessConfig, maxBodyBytes int) (*Trace, error) {
 	requestTrace, err := httputil.DumpRequestOut(request, true)
 	if err != nil {
@@ -114,23 +137,19 @@ func DoTrace(client *http.Client, request *http.Request, retries *RetryConfig, a
 		RequestTrace: requestTrace,
 		StartTime:    dates.Now(),
 	}
+	defer func() { trace.EndTime = dates.Now() }()
 
 	response, retryCount, err := do(client, request, retries, access)
-	trace.EndTime = dates.Now()
+	trace.Response = response
 	trace.Retries = retryCount
 
 	if err != nil {
 		return trace, err
 	}
 
-	trace.Response = response
 	trace.ResponseTrace, trace.ResponseBody, err = dumpResponse(response, maxBodyBytes)
 	if err != nil {
 		return trace, err
-	}
-
-	if debug {
-		fmt.Println(trace.String())
 	}
 
 	return trace, nil
@@ -172,7 +191,7 @@ func readBody(response *http.Response, maxBodyBytes int) ([]byte, error) {
 		// we will only read up to our max body bytes limit
 		bodyReader := io.LimitReader(response.Body, int64(maxBodyBytes)+1)
 
-		bodyBytes, err := ioutil.ReadAll(bodyReader)
+		bodyBytes, err := io.ReadAll(bodyReader)
 		if err != nil {
 			return nil, err
 		}
@@ -186,7 +205,7 @@ func readBody(response *http.Response, maxBodyBytes int) ([]byte, error) {
 	}
 
 	// if there is no limit, read the entire body
-	return ioutil.ReadAll(response.Body)
+	return io.ReadAll(response.Body)
 }
 
 // Requestor is anything that can make an HTTP request with a client
@@ -209,7 +228,16 @@ func SetRequestor(requestor Requestor) {
 	currentRequestor = requestor
 }
 
-// SetDebug enables debugging
-func SetDebug(enabled bool) {
-	debug = enabled
+// DetectContentType is a replacement for http.DetectContentType which leans on the github.com/gabriel-vasile/mimetype
+// library to support more types, and additionally returns the extension (including leading period) associated with the
+// detected type.
+func DetectContentType(d []byte) (string, string) {
+	mime := mimetype.Detect(d)
+	return mime.String(), mime.Extension()
+}
+
+// BasicAuth returns the Authorization header value for HTTP Basic auth
+func BasicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }

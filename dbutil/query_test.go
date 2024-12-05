@@ -14,9 +14,7 @@ import (
 func TestBulkSQL(t *testing.T) {
 	db := getTestDB()
 
-	defer func() {
-		db.MustExec(`DROP TABLE foo`)
-	}()
+	defer func() { db.MustExec(`DROP TABLE foo`) }()
 
 	db.MustExec(`CREATE TABLE foo (id serial NOT NULL PRIMARY KEY, name VARCHAR(10))`)
 	db.MustExec(`INSERT INTO foo (name) VALUES('Bob')`)
@@ -81,11 +79,11 @@ func TestBulkQuery(t *testing.T) {
 	sql := `INSERT INTO foo (name, age) VALUES(:name, :age) RETURNING id`
 
 	// noop with zero structs
-	err = dbutil.BulkQuery(ctx, db, sql, nil)
+	err = dbutil.BulkQuery(ctx, db, sql, []*foo{})
 	assert.NoError(t, err)
 
 	// returned ids are scanned into structs
-	err = dbutil.BulkQuery(ctx, db, sql, []interface{}{foo1, foo2})
+	err = dbutil.BulkQuery(ctx, db, sql, []*foo{foo1, foo2})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, foo1.ID)
 	assert.Equal(t, 2, foo2.ID)
@@ -110,5 +108,5 @@ func TestBulkQuery(t *testing.T) {
 
 // returns an open test database pool
 func getTestDB() *sqlx.DB {
-	return sqlx.MustOpen("postgres", "postgres://nyaruka:nyaruka@localhost/gocommon_test?sslmode=disable&Timezone=UTC")
+	return sqlx.MustOpen("postgres", "postgres://gocommon_test:temba@localhost/gocommon_test?sslmode=disable&Timezone=UTC")
 }
