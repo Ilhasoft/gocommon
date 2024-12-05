@@ -1,3 +1,77 @@
+v1.42.7 (2023-12-12)
+-------------------------
+ * Update deps
+
+v1.42.6 (2023-11-24)
+-------------------------
+ * Update to latest phonenumbers
+
+v1.42.5 (2023-11-20)
+-------------------------
+ * Update deps
+
+v1.42.4 (2023-11-13)
+-------------------------
+ * Tweak stringsx.Skeleton
+
+v1.42.3 (2023-11-08)
+-------------------------
+ * Update phonenumbers
+
+v1.42.2 (2023-10-30)
+-------------------------
+ * Add httpx.ParseNetworks util function
+
+v1.42.1 (2023-10-28)
+-------------------------
+ * Use error constants for some httpx error cases
+
+v1.42.0 (2023-10-12)
+-------------------------
+ * Update to go 1.21 and update deps
+
+v1.41.3 (2023-09-19)
+-------------------------
+ * Add dbutil.ScanAllJSON
+
+v1.41.2 (2023-09-11)
+-------------------------
+ * Allow creating query errors without an error to wrap
+
+v1.41.1 (2023-09-04)
+-------------------------
+ * Use i18n.Locale for date formatting
+
+v1.41.0 (2023-09-04)
+-------------------------
+ * Move some locales code from goflow/envs
+
+v1.40.0 (2023-08-31)
+-------------------------
+ * Rework syncx.Batcher so that it flushes a batch without waiting if it has enough items
+
+v1.39.1 (2023-08-28)
+-------------------------
+ * Rename dbutil.Queryer to BulkQueryer for clarity
+
+v1.39.0 (2023-08-28)
+-------------------------
+ * Use any instead of interface{}
+ * Add dbutil.ScanAllSlice and ScanAllMap
+ * Test on go 1.21
+
+v1.38.2 (2023-08-09)
+-------------------------
+ * Revert validator dep upgrade
+
+v1.38.1 (2023-08-09)
+-------------------------
+ * Update deps including phonenumbers
+
+v1.38.0 (2023-08-07)
+-------------------------
+ * Add confusables implementation to stringsx
+
 v1.37.0 (2023-07-20)
 -------------------------
  * Storage paths shouldn't need to start with slash
